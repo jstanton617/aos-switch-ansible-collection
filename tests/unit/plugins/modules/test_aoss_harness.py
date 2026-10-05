@@ -20,7 +20,7 @@ __metaclass__ = type
 
 import unittest
 
-from ansible_collections.arubanetworks.aos_switch.plugins.modules import arubaoss_vlan
+from ansible_collections.arubanetworks.aos_switch.plugins.modules import arubaoss_user, arubaoss_vlan
 from ansible_collections.arubanetworks.aos_switch.tests.unit.plugins.modules.aoss_harness import (
     FakeSwitch, run_module)
 
@@ -37,6 +37,19 @@ class TestHarness(unittest.TestCase):
         # Every login is matched by a logout.
         sessions = [m for m, p, _ in switch.requests if p == '/login-sessions']
         self.assertEqual(sessions.count('POST'), sessions.count('DELETE'))
+
+    def test_warnings_reach_the_result_after_controller_code_is_imported(self):
+        # Importing a controller plugin, as test_command_connection_failure
+        # does, marks the whole process as a controller, and from then on
+        # AnsibleModule.warn() writes to the controller's display instead of
+        # the result. A module never runs in the controller's process.
+        import ansible.plugins.cliconf  # noqa: F401 pylint: disable=unused-import
+        result = run_module(arubaoss_user, {'user_name': 'operator', 'user_password': 'x'},
+                            FakeSwitch({'/system/include-credentials': {
+                                'include_credentials_in_response': 'ICS_DISABLED'}}))
+        messages = [w['event']['msg'] if isinstance(w, dict) else w
+                    for w in result.get('warnings', [])]
+        self.assertTrue(any('no_log' in m for m in messages), result)
 
 
 if __name__ == '__main__':

@@ -38,6 +38,12 @@ from ansible.module_utils import basic
 
 from ansible_collections.arubanetworks.aos_switch.plugins.module_utils import arubaoss
 
+try:
+    from ansible.module_utils import _internal
+except ImportError:
+    # ansible-core before 2.19
+    _internal = None
+
 PROVIDER = {
     'host': 'switch.example',
     'username': 'manager',
@@ -136,6 +142,19 @@ def _module_args(args):
         yield
 
 
+def _module_context():
+    """A module runs in its own process, never the controller's.
+
+    Importing controller code, such as a cliconf plugin, marks the whole test
+    process as a controller (ansible-core 2.19 and later). From then on,
+    AnsibleModule.warn() writes to the controller's display instead of the
+    module's result.
+    """
+    if _internal is None or not hasattr(_internal, 'is_controller'):
+        return contextlib.nullcontext()
+    return mock.patch.object(_internal, 'is_controller', False)
+
+
 def run_module(module, args, switch, check_mode=False):
     """Run module.main() against switch, and return the result it printed."""
     args = dict(args)
@@ -146,7 +165,7 @@ def run_module(module, args, switch, check_mode=False):
     # Aossapi caches its connection in a module global.
     arubaoss._DEVICE_CONNECTION = None
     try:
-        with _module_args(args), \
+        with _module_args(args), _module_context(), \
                 mock.patch.object(arubaoss, 'fetch_url', switch.fetch_url), \
                 mock.patch.object(arubaoss, 'sleep', lambda seconds: None), \
                 contextlib.redirect_stdout(out):
