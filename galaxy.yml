@@ -8,7 +8,7 @@ license: "Apache-2.0"
 name: aos_switch
 namespace: arubanetworks
 readme: README.md
-repository: https://github.com/aruba/aos-switch-ansible-collection
+repository: https://github.com/jstanton617/aos-switch-ansible-collection
 tags: [
   networking,
   aruba,
@@ -17,7 +17,7 @@ tags: [
   hpe,
   datacenter
 ]
-version: 1.7.0
+version: 1.7.0+homelab.1
 authors:
   - "Ti Chiapuzio-Wong"
   - "Sunil Veeramachaneni"
