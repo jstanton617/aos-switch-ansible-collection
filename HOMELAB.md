@@ -14,7 +14,7 @@ requests that upstream has not reviewed:
 | [#113](https://github.com/aruba/aos-switch-ansible-collection/pull/113) | `device_operation_mode` was sent on every call (#106) |
 | [#114](https://github.com/aruba/aos-switch-ansible-collection/pull/114) | `loop_protect` reset settings and misspelled two field names (#107) |
 
-Each is merged as it stands on its PR. Two changes are this branch's own:
+Each is merged as it stands on its PR. Three changes are this branch's own:
 
 - **A fix to #101.** #101 removes `FactsBase.warnings` from
   `module_utils/facts/legacy.py`, but `ansible.netcommon` reads that attribute
@@ -23,6 +23,11 @@ Each is merged as it stands on its PR. Two changes are this branch's own:
   running this branch against three switches. The attribute is back, and the
   warnings netcommon collects reach the result through `module.warn()`.
   `tests/unit/plugins/modules/test_facts.py` fails without it.
+- **`collections.abc`, not `_collections_compat`.** The cliconf plugin imported
+  `Mapping` from `ansible.module_utils.common._collections_compat`, which
+  ansible-core 2.24 removes, and 2.21 prints the deprecation on every CLI-path
+  run. Only that path loads cliconf, so REST-only runs never show it.
+  `tests/unit/plugins/test_collections_compat_import.py` fails without it.
 - **`galaxy.yml`:** `repository` names this fork, and the version is
   `1.7.0+homelab.1`, so an install says where it came from.
 
