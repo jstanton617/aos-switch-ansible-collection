@@ -70,4 +70,10 @@ class Facts(FactsBase):
             self.get_network_legacy_facts(FACT_LEGACY_SUBSETS,
                                           legacy_facts_type)
 
+        # netcommon collects the legacy classes' warnings into _warnings.
+        # They reach the result through module.warn(), not exit_json's
+        # deprecated `warnings` key.
+        for warning in self._warnings:
+            self._module.warn(warning)
+
         return self.ansible_facts

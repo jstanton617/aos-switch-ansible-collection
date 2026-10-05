@@ -20,6 +20,8 @@ class FactsBase(object):
 
     def __init__(self, module):
         self._module = module
+        # Read by ansible.netcommon's FactsBase.get_network_legacy_facts().
+        self.warnings = list()
         self.facts = dict()
         self.responses = None
         self._url = None

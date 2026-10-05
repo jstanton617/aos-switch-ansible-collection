@@ -14,9 +14,17 @@ requests that upstream has not reviewed:
 | [#113](https://github.com/aruba/aos-switch-ansible-collection/pull/113) | `device_operation_mode` was sent on every call (#106) |
 | [#114](https://github.com/aruba/aos-switch-ansible-collection/pull/114) | `loop_protect` reset settings and misspelled two field names (#107) |
 
-Each is merged as it stands on its PR. The one change of this branch's own is
-`galaxy.yml`: `repository` names this fork, and the version is
-`1.7.0+homelab.1`, so an install says where it came from.
+Each is merged as it stands on its PR. Two changes are this branch's own:
+
+- **A fix to #101.** #101 removes `FactsBase.warnings` from
+  `module_utils/facts/legacy.py`, but `ansible.netcommon` reads that attribute
+  from every legacy facts class. So with #101 alone, `arubaoss_facts` fails on
+  every switch: "'HostSystemInfo' object has no attribute 'warnings'". Found by
+  running this branch against three switches. The attribute is back, and the
+  warnings netcommon collects reach the result through `module.warn()`.
+  `tests/unit/plugins/modules/test_facts.py` fails without it.
+- **`galaxy.yml`:** `repository` names this fork, and the version is
+  `1.7.0+homelab.1`, so an install says where it came from.
 
 The unit tests are in `tests/unit`, and run with:
 
