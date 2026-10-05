@@ -286,6 +286,17 @@ def main():
     )
 
     commands = parse_commands(module)
+
+    # Check mode runs only `show` commands, as netcommon's cli_command and
+    # vyos_command do. Anything else would be executed for real: the module
+    # declares check-mode support, so Ansible does not skip it.
+    if module.check_mode:
+        for item in list(commands):
+            if not item['command'].startswith('show'):
+                module.warn('Only show commands are supported when using check '
+                            'mode, not executing %s' % item['command'])
+                commands.remove(item)
+
     wait_for = module.params['wait_for'] or list()
 
     try:
